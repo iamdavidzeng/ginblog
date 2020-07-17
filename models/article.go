@@ -26,7 +26,7 @@ func (article *Article) BeforeCreate(scope *gorm.Scope) error {
 	return nil
 }
 
-func (article *Article) BeforeUpdate(scope *grom.Scope) error {
+func (article *Article) BeforeUpdate(scope *gorm.Scope) error {
 	scope.SetColumn("ModifiedOn", time.Now().Unix())
 
 	return nil
