@@ -1,17 +1,17 @@
 package logging
 
 import (
+	"fmt"
 	"log"
 	"os"
-
-	"golang.org/x/text/cases"
+	"time"
 )
 
 var (
 	LogSavePath = "runtime/logs/"
 	LogSaveName = "log"
-	LogFileExt = "log"
-	TimeFormat = "20000101"
+	LogFileExt  = "log"
+	TimeFormat  = "20000101"
 )
 
 func getLogFilePath() string {
@@ -34,15 +34,17 @@ func openLogFile(filePath string) *os.File {
 		log.Fatal("Permission: %v", err)
 	}
 
-	handle, err := os.OpenFile(filePath, os.O_APPEND | os.O_CREATE | os.O_WRONLY, 0644)
+	handle, err := os.OpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Fatal("Fail to Openfile: %v", err)
 	}
+
+	return handle
 }
 
 func mkDir() {
 	dir, _ := os.Getwd()
-	err := os.Mkdirall(dir + "/" + getLogFilePath(), os.ModePerm)
+	err := os.MkdirAll(dir+"/"+getLogFilePath(), os.ModePerm)
 	if err != nil {
 		panic(err)
 	}
