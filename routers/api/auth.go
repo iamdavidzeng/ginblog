@@ -3,16 +3,17 @@ package api
 import (
 	"gin-blog/models"
 	"gin-blog/pkg/e"
-	"gin-blog/pkg/logging"
+	"gin-blog/pkg/util"
+	"log"
 	"net/http"
 
 	"github.com/astaxie/beego/validation"
 	"github.com/gin-gonic/gin"
 )
 
-type Auth struct {
-	Username string `valid:"Required; Maxsize(50)"`
-	Password string `valid:"Required; Maxsize(50)"`
+type auth struct {
+	Username string `valid:"Required; MaxSize(50)"`
+	Password string `valid:"Required; MaxSize(50)"`
 }
 
 func GetAuth(c *gin.Context) {
@@ -20,7 +21,7 @@ func GetAuth(c *gin.Context) {
 	password := c.Query("password")
 
 	valid := validation.Validation{}
-	a := Auth{Username: username, Password: password}
+	a := auth{Username: username, Password: password}
 	ok, _ := valid.Valid(&a)
 
 	data := make(map[string]interface{})
@@ -40,13 +41,13 @@ func GetAuth(c *gin.Context) {
 		}
 	} else {
 		for _, err := range valid.Errors {
-			logging.Println(err.Key, err.Value)
+			log.Println(err.Key, err.Value)
 		}
 	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"code": code,
-		"msg": e.GetMsg(code),
-		"data": data
+		"msg":  e.GetMsg(code),
+		"data": data,
 	})
 }

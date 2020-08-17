@@ -31,12 +31,12 @@ func openLogFile(filePath string) *os.File {
 	case os.IsNotExist(err):
 		mkDir()
 	case os.IsPermission(err):
-		log.Fatal("Permission: %v", err)
+		log.Fatalf("Permission: %v", err)
 	}
 
 	handle, err := os.OpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		log.Fatal("Fail to Openfile: %v", err)
+		log.Fatalf("Fail to Openfile: %v", err)
 	}
 
 	return handle
