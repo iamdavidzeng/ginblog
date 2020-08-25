@@ -33,31 +33,35 @@ func init() {
 	filePath := getLogFileFullPath()
 	F = openLogFile(filePath)
 
-	logger = log.New(F, DefaultPrefix, log.Lshortfile)
+	logger = log.New(F, DefaultPrefix, log.LstdFlags)
 }
 
 func Debug(v ...interface{}) {
-	setPreifx(DEBUG)
+	setPrefix(DEBUG)
 	logger.Println(v)
-
 }
 
 func Info(v ...interface{}) {
-	setPreifx(INFO)
+	setPrefix(INFO)
+	logger.Println(v)
+}
+
+func Warn(v ...interface{}) {
+	setPrefix(WARNING)
 	logger.Println(v)
 }
 
 func Error(v ...interface{}) {
-	setPreifx(ERROR)
+	setPrefix(ERROR)
 	logger.Println(v)
 }
 
 func Fatal(v ...interface{}) {
-	setPreifx(FATAL)
-	logger.Println(v)
+	setPrefix(FATAL)
+	logger.Fatalln(v)
 }
 
-func setPreifx(level Level) {
+func setPrefix(level Level) {
 	_, file, line, ok := runtime.Caller(DefaultCallerDepth)
 	if ok {
 		logPrefix = fmt.Sprintf("[%s][%s:%d]", levelFlags[level], filepath.Base(file), line)

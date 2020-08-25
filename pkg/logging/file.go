@@ -11,7 +11,7 @@ var (
 	LogSavePath = "runtime/logs/"
 	LogSaveName = "log"
 	LogFileExt  = "log"
-	TimeFormat  = "20000101"
+	TimeFormat  = "20200825"
 )
 
 func getLogFilePath() string {
@@ -31,12 +31,12 @@ func openLogFile(filePath string) *os.File {
 	case os.IsNotExist(err):
 		mkDir()
 	case os.IsPermission(err):
-		log.Fatalf("Permission: %v", err)
+		log.Fatalf("Permission :%v", err)
 	}
 
 	handle, err := os.OpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		log.Fatalf("Fail to Openfile: %v", err)
+		log.Fatalf("Fail to OpenFile :%v", err)
 	}
 
 	return handle
