@@ -1,16 +1,13 @@
 package setting
 
 import (
-	"log"
+	"fmt"
 	"time"
 
-	"github.com/go-ini/ini"
+	"github.com/spf13/viper"
 )
 
 var (
-	// Cfg use ini.File object get config
-	Cfg *ini.File
-
 	// RunMode 1
 	RunMode string
 
@@ -27,42 +24,65 @@ var (
 	JwtSecret string
 )
 
+type Config struct {
+	RunMode  string   `mapstructure:"RUN_MODE"`
+	App      App      `mapstructure:"APP"`
+	Server   Server   `mapstructure:"SERVER"`
+	Database Database `mapstructure:"DATABASE"`
+}
+
+type App struct {
+	PageSize  int    `mapstructure:"PAGE_SIZE"`
+	JwtSecret string `mapstructure:"JWT_SECRET"`
+}
+
+type Server struct {
+	HTTPPort     int `mapstructure:"HTTP_PORT"`
+	ReadTimeout  int `mapstructure:"READ_TIMEOUT"`
+	WriteTimeout int `mapstructure:"WRITE_TIMEOUT"`
+}
+
+type Database struct {
+	Type        string `mapstructure:"TYPE"`
+	User        string `mapstructure:"USER"`
+	Password    string `mapstructure:"PASSWORD"`
+	Host        string `mapstructure:"HOST"`
+	Port        int    `mapstructure:"PORT"`
+	Name        string `mapstructure:"NAME"`
+	TablePrefix string `mapstructure:"TABLE_PREFIX"`
+}
+
+var Cfg Config
+
 func init() {
-	var err error
-	Cfg, err = ini.Load("conf/app.ini")
-	if err != nil {
-		log.Fatalf("Fail to parse 'conf/app.ini': %v", err)
+	viper.SetConfigName("app")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath("./conf")
+	err := viper.ReadInConfig()
+	if err != nil { // Handle errors reading the config file
+		panic(fmt.Errorf("Fatal error config file: %s", err))
 	}
+	viper.Unmarshal(&Cfg)
 
 	LoadBase()
-	LoadServer()
 	LoadApp()
+	LoadServer()
 }
 
 // LoadBase parse base config from ini file
 func LoadBase() {
-	RunMode = Cfg.Section("").Key("RUN_MODE").MustString("debug")
+	RunMode = Cfg.RunMode
 }
 
 // LoadServer parse server config
 func LoadServer() {
-	sec, err := Cfg.GetSection("server")
-	if err != nil {
-		log.Fatalf("Fail to get section 'server': %v", err)
-	}
-
-	HTTPPort = sec.Key("HTTP_PORT").MustInt(8000)
-	ReadTimeout = time.Duration(sec.Key("READ_TIMEOUT").MustInt(60)) * time.Second
-	WriteTimeout = time.Duration(sec.Key("WRITE_TIMEOUT").MustInt(60)) * time.Second
+	HTTPPort = Cfg.Server.HTTPPort
+	ReadTimeout = time.Duration(Cfg.Server.ReadTimeout) * time.Second
+	WriteTimeout = time.Duration(Cfg.Server.WriteTimeout) * time.Second
 }
 
 // LoadApp parse app config
 func LoadApp() {
-	sec, err := Cfg.GetSection("app")
-	if err != nil {
-		log.Fatalf("Fail to get section 'app': %v", err)
-	}
-
-	JwtSecret = sec.Key("JWT_SECRET").MustString("123456")
-	PageSize = sec.Key("PAGE_SIZE").MustInt(10)
+	JwtSecret = Cfg.App.JwtSecret
+	PageSize = Cfg.App.PageSize
 }

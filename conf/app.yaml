@@ -1,0 +1,19 @@
+RUN_MODE: debug
+
+APP:
+    PAGE_SIZE: 10
+    JWT_SECRET: 123456
+
+SERVER:
+    HTTP_PORT: 8000
+    READ_TIMEOUT: 60
+    WRITE_TIMEOUT: 60
+
+DATABASE:
+    TYPE: mysql
+    USER: root
+    PASSWORD:
+    HOST: 127.0.0.1
+    PORT: 3306
+    NAME: blog
+    TABLE_PREFIX: blog_
