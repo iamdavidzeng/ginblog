@@ -11,9 +11,7 @@ import (
 type Level int
 
 var (
-	F *os.File
-
-	DefaultPrefix      = ""
+	DefaultPrefix      = "[gin-blog]"
 	DefaultCallerDepth = 2
 
 	logger     *log.Logger
@@ -30,7 +28,7 @@ const (
 )
 
 func init() {
-	logger = log.New(os.Stderr, DefaultPrefix, log.LstdFlags)
+	logger = log.New(os.Stdout, DefaultPrefix, log.LstdFlags)
 }
 
 func Debug(v ...interface{}) {

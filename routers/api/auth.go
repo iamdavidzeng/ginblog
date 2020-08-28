@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"gin-blog/models"
 	"gin-blog/pkg/e"
 	"gin-blog/pkg/logging"
@@ -42,8 +43,11 @@ func GetAuth(c *gin.Context) {
 	} else {
 		for _, err := range valid.Errors {
 			logging.Info(err.Key, err.Value)
+			fmt.Println("i am here...")
 		}
 	}
+	logging.Info("i am here.......")
+	fmt.Println("i am here...")
 
 	c.JSON(http.StatusOK, gin.H{
 		"code": code,
