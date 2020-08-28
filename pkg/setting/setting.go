@@ -2,6 +2,8 @@ package setting
 
 import (
 	"fmt"
+	"os"
+	"regexp"
 	"time"
 
 	"github.com/spf13/viper"
@@ -25,13 +27,13 @@ var (
 )
 
 type Config struct {
-	RunMode  string   `mapstructure:"RUN_MODE"`
-	App      App      `mapstructure:"APP"`
-	Server   Server   `mapstructure:"SERVER"`
-	Database Database `mapstructure:"DATABASE"`
-	DB       struct {
-		Type string `mapstructure:"TYPE"`
-		URI  string `mapstructure:"URI"`
+	RunMode  string `mapstructure:"RUN_MODE"`
+	App      App    `mapstructure:"APP"`
+	Server   Server `mapstructure:"SERVER"`
+	Database struct {
+		Type        string `mapstructure:"TYPE"`
+		TablePrefix string `mapstructure:"TABLE_PREFIX"`
+		URI         string `mapstructure:"URI"`
 	} `mapstructure:"DB"`
 }
 
@@ -46,35 +48,49 @@ type Server struct {
 	WriteTimeout int `mapstructure:"WRITE_TIMEOUT"`
 }
 
-type Database struct {
-	Type        string `mapstructure:"TYPE"`
-	User        string `mapstructure:"USER"`
-	Password    string `mapstructure:"PASSWORD"`
-	Host        string `mapstructure:"HOST"`
-	Port        int    `mapstructure:"PORT"`
-	Name        string `mapstructure:"NAME"`
-	TablePrefix string `mapstructure:"TABLE_PREFIX"`
-}
-
 var Cfg Config
 
 func init() {
 	viper.SetConfigName("app")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath("./conf")
-	err := viper.ReadInConfig()
-	if err != nil { // Handle errors reading the config file
+	viper.AutomaticEnv()
+	if err := viper.ReadInConfig(); err != nil {
 		panic(fmt.Errorf("Fatal error config file: %s", err))
 	}
-	viper.Unmarshal(&Cfg)
 
-	fmt.Println(Cfg)
+	for _, key := range viper.AllKeys() {
+		value := viper.GetString(key)
+		envValueOrDefault := Parse(value)
+		viper.Set(key, envValueOrDefault)
+	}
 
-	fmt.Println(viper.Get("DB_PASS"))
+	err := viper.Unmarshal(&Cfg)
+	if err != nil {
+		panic(fmt.Errorf("Fatal error load config: %s", err))
+	}
 
+	// Load config to constant
 	LoadBase()
 	LoadApp()
 	LoadServer()
+}
+
+// Parse use to get ENV value or just default value
+func Parse(str string) string {
+	search := regexp.MustCompile(`\$\{([^}:]+):?([^}]+)?\}`)
+	replacedBody := search.ReplaceAllFunc([]byte(str), func(b []byte) []byte {
+		group1 := search.ReplaceAllString(string(b), `$1`)
+		group2 := search.ReplaceAllString(string(b), `$2`)
+
+		envValue := os.Getenv(group1)
+		if len(envValue) > 0 {
+			return []byte(envValue)
+		}
+		return []byte(group2)
+	})
+
+	return string(replacedBody)
 }
 
 // LoadBase parse base config from ini file

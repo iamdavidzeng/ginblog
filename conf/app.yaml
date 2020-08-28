@@ -1,23 +1,15 @@
-RUN_MODE: debug
+RUN_MODE: ${RUN_MODE:debug}
 
 APP:
     PAGE_SIZE: 10
-    JWT_SECRET: 123456
+    JWT_SECRET: ${JWT_SECRET:123456}
 
 SERVER:
     HTTP_PORT: 8000
     READ_TIMEOUT: 60
     WRITE_TIMEOUT: 60
 
-DATABASE:
-    TYPE: mysql
-    USER: root
-    PASSWORD:
-    HOST: 127.0.0.1
-    PORT: 3306
-    NAME: blog
-    TABLE_PREFIX: blog_
-
 DB:
     TYPE: mysql
-    URI: ${DB_USER:root}:${DB_PASS:}@tcp${DB_SERVER:localhost}/${DB_NAME:blog}?charset=utf8mb4&parseTime=True&loc=Local
+    TABLE_PREFIX: blog_
+    URI: ${DB_USER:root}:${DB_PASS:}@tcp(${DB_SERVER:localhost}:${DB_PORT:3306})/${DB_NAME:blog}?charset=utf8mb4&parseTime=True&loc=Local

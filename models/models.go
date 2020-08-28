@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"gin-blog/pkg/setting"
 	"log"
 	"time"
@@ -21,24 +20,15 @@ type Model struct {
 
 func init() {
 	var (
-		err                                               error
-		dbType, dbName, user, password, host, tablePrefix string
+		err                        error
+		dbType, dbURI, tablePrefix string
 	)
 
-	dbConfig := setting.Cfg.Database
+	dbType = setting.Cfg.Database.Type
+	tablePrefix = setting.Cfg.Database.TablePrefix
+	dbURI = setting.Cfg.Database.URI
 
-	dbType = dbConfig.Type
-	dbName = dbConfig.Name
-	user = dbConfig.User
-	password = dbConfig.Password
-	host = dbConfig.Host
-	tablePrefix = dbConfig.TablePrefix
-
-	db, err = gorm.Open(dbType, fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-		user,
-		password,
-		host,
-		dbName))
+	db, err = gorm.Open(dbType, dbURI)
 	if err != nil {
 		log.Println(err)
 	}
