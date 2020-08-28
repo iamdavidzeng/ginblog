@@ -29,6 +29,10 @@ type Config struct {
 	App      App      `mapstructure:"APP"`
 	Server   Server   `mapstructure:"SERVER"`
 	Database Database `mapstructure:"DATABASE"`
+	DB       struct {
+		Type string `mapstructure:"TYPE"`
+		URI  string `mapstructure:"URI"`
+	} `mapstructure:"DB"`
 }
 
 type App struct {
@@ -63,6 +67,10 @@ func init() {
 		panic(fmt.Errorf("Fatal error config file: %s", err))
 	}
 	viper.Unmarshal(&Cfg)
+
+	fmt.Println(Cfg)
+
+	fmt.Println(viper.Get("DB_PASS"))
 
 	LoadBase()
 	LoadApp()

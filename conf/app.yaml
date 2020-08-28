@@ -17,3 +17,7 @@ DATABASE:
     PORT: 3306
     NAME: blog
     TABLE_PREFIX: blog_
+
+DB:
+    TYPE: mysql
+    URI: ${DB_USER:root}:${DB_PASS:}@tcp${DB_SERVER:localhost}/${DB_NAME:blog}?charset=utf8mb4&parseTime=True&loc=Local
