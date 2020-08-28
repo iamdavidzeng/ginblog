@@ -1,16 +1,15 @@
 package setting
 
 import (
-	"log"
+	"fmt"
+	"os"
+	"regexp"
 	"time"
 
-	"github.com/go-ini/ini"
+	"github.com/spf13/viper"
 )
 
 var (
-	// Cfg use ini.File object get config
-	Cfg *ini.File
-
 	// RunMode 1
 	RunMode string
 
@@ -27,42 +26,87 @@ var (
 	JwtSecret string
 )
 
+type Config struct {
+	RunMode  string `mapstructure:"RUN_MODE"`
+	App      App    `mapstructure:"APP"`
+	Server   Server `mapstructure:"SERVER"`
+	Database struct {
+		Type        string `mapstructure:"TYPE"`
+		TablePrefix string `mapstructure:"TABLE_PREFIX"`
+		URI         string `mapstructure:"URI"`
+	} `mapstructure:"DB"`
+}
+
+type App struct {
+	PageSize  int    `mapstructure:"PAGE_SIZE"`
+	JwtSecret string `mapstructure:"JWT_SECRET"`
+}
+
+type Server struct {
+	HTTPPort     int `mapstructure:"HTTP_PORT"`
+	ReadTimeout  int `mapstructure:"READ_TIMEOUT"`
+	WriteTimeout int `mapstructure:"WRITE_TIMEOUT"`
+}
+
+var Cfg Config
+
 func init() {
-	var err error
-	Cfg, err = ini.Load("conf/app.ini")
-	if err != nil {
-		log.Fatalf("Fail to parse 'conf/app.ini': %v", err)
+	viper.SetConfigName("app")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath("./conf")
+	viper.AutomaticEnv()
+	if err := viper.ReadInConfig(); err != nil {
+		panic(fmt.Errorf("Fatal error config file: %s", err))
 	}
 
+	for _, key := range viper.AllKeys() {
+		value := viper.GetString(key)
+		envValueOrDefault := Parse(value)
+		viper.Set(key, envValueOrDefault)
+	}
+
+	err := viper.Unmarshal(&Cfg)
+	if err != nil {
+		panic(fmt.Errorf("Fatal error load config: %s", err))
+	}
+
+	// Load config to constant
 	LoadBase()
-	LoadServer()
 	LoadApp()
+	LoadServer()
+}
+
+// Parse use to get ENV value or just default value
+func Parse(str string) string {
+	search := regexp.MustCompile(`\$\{([^}:]+):?([^}]+)?\}`)
+	replacedBody := search.ReplaceAllFunc([]byte(str), func(b []byte) []byte {
+		group1 := search.ReplaceAllString(string(b), `$1`)
+		group2 := search.ReplaceAllString(string(b), `$2`)
+
+		envValue := os.Getenv(group1)
+		if len(envValue) > 0 {
+			return []byte(envValue)
+		}
+		return []byte(group2)
+	})
+
+	return string(replacedBody)
 }
 
 // LoadBase parse base config from ini file
 func LoadBase() {
-	RunMode = Cfg.Section("").Key("RUN_MODE").MustString("debug")
+	RunMode = Cfg.RunMode
 }
 
 // LoadServer parse server config
 func LoadServer() {
-	sec, err := Cfg.GetSection("server")
-	if err != nil {
-		log.Fatalf("Fail to get section 'server': %v", err)
-	}
-
-	HTTPPort = sec.Key("HTTP_PORT").MustInt(8000)
-	ReadTimeout = time.Duration(sec.Key("READ_TIMEOUT").MustInt(60)) * time.Second
-	WriteTimeout = time.Duration(sec.Key("WRITE_TIMEOUT").MustInt(60)) * time.Second
+	HTTPPort = Cfg.Server.HTTPPort
+	ReadTimeout = time.Duration(Cfg.Server.ReadTimeout) * time.Second
+	WriteTimeout = time.Duration(Cfg.Server.WriteTimeout) * time.Second
 }
 
 // LoadApp parse app config
 func LoadApp() {
-	sec, err := Cfg.GetSection("app")
-	if err != nil {
-		log.Fatalf("Fail to get section 'app': %v", err)
-	}
-
-	JwtSecret = sec.Key("JWT_SECRET").MustString("123456")
-	PageSize = sec.Key("PAGE_SIZE").MustInt(10)
+	JwtSecret = Cfg.App.JwtSecret
+	PageSize = Cfg.App.PageSize
 }

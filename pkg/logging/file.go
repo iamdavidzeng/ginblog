@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	LogSavePath = "runtime/logs/"
+	LogSavePath = "/var/null/"
 	LogSaveName = "log"
 	LogFileExt  = "log"
 	TimeFormat  = "20200825"
