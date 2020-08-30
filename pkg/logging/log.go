@@ -4,14 +4,12 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path/filepath"
-	"runtime"
 )
 
 type Level int
 
 var (
-	DefaultPrefix      = "[gin-blog]"
+	DefaultPrefix      = "[iamdavidzeng]"
 	DefaultCallerDepth = 2
 
 	logger     *log.Logger
@@ -28,41 +26,40 @@ const (
 )
 
 func init() {
-	logger = log.New(os.Stdout, DefaultPrefix, log.LstdFlags)
+	logger = log.New(os.Stdout, DefaultPrefix, log.Ldate|log.Ltime|log.Lshortfile)
 }
 
+// Debug report
 func Debug(v ...interface{}) {
 	setPrefix(DEBUG)
 	logger.Println(v)
 }
 
+// Info report
 func Info(v ...interface{}) {
 	setPrefix(INFO)
 	logger.Println(v)
 }
 
+// Warn report
 func Warn(v ...interface{}) {
 	setPrefix(WARNING)
 	logger.Println(v)
 }
 
+// Error report
 func Error(v ...interface{}) {
 	setPrefix(ERROR)
 	logger.Println(v)
 }
 
+// Fatal report
 func Fatal(v ...interface{}) {
 	setPrefix(FATAL)
 	logger.Fatalln(v)
 }
 
 func setPrefix(level Level) {
-	_, file, line, ok := runtime.Caller(DefaultCallerDepth)
-	if ok {
-		logPrefix = fmt.Sprintf("[%s][%s:%d]", levelFlags[level], filepath.Base(file), line)
-	} else {
-		logPrefix = fmt.Sprintf("[%s]", levelFlags[level])
-	}
-
+	logPrefix = fmt.Sprintf("[%s]: ", levelFlags[level])
 	logger.SetPrefix(logPrefix)
 }
