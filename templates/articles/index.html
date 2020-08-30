@@ -1,0 +1,9 @@
+{{ define "articles/index.tmpl" }}
+<html>
+    {{ range .articles }}
+    <h1>{{ .title }}</h1>
+    <p>{{ .author }}</P>
+    <p>{{ .content }}</p>
+    {{ end }}
+</html>
+{{ end }}
