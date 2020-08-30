@@ -41,7 +41,7 @@ func GetAuth(c *gin.Context) {
 		}
 	} else {
 		for _, err := range valid.Errors {
-			logging.Info(err.Key, err.Value)
+			logging.Error(err.Key, err.Value)
 		}
 	}
 
